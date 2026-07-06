@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Decay Tracker — Your Knowledge is Expiring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #18181c;
+    --surface2: #222228;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0efe8;
+    --muted: #888884;
+    --accent: #7F77DD;
+    --accent-dim: rgba(127,119,221,0.15);
+    --red: #E24B4A;
+    --red-dim: rgba(226,75,74,0.12);
+    --amber: #EF9F27;
+    --amber-dim: rgba(239,159,39,0.12);
+    --green: #5ab552;
+    --green-dim: rgba(90,181,82,0.12);
+    --blue: #378ADD;
+    --blue-dim: rgba(55,138,221,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .app { max-width: 680px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent); font-size: 20px;
+  }
+  .logo-text h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo-text p { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+
+  .add-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .stat {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 700; }
+  .stat-val.red { color: var(--red); }
+  .stat-val.green { color: var(--green); }
+
+  /* Section */
+  .section-label {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Topic cards */
+  .topics { display: flex; flex-direction: column; gap: 8px; }
+
+  .topic-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .topic-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .topic-card:hover::before { opacity: 1; }
+  .topic-card.dying { border-color: rgba(226,75,74,0.35); }
+  .topic-card.dying::before { background: var(--red); opacity: 1; }
+  .topic-card.warning { border-color: rgba(239,159,39,0.25); }
+  .topic-card.warning::before { background: var(--amber); opacity: 1; }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .card-meta { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+  .tag {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .tag-fresh { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(55,138,221,0.2); }
+  .tag-ok { background: var(--green-dim); color: var(--green); border: 1px solid rgba(90,181,82,0.2); }
+  .tag-warning { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(239,159,39,0.2); }
+  .tag-dying { background: var(--red-dim); color: var(--red); border: 1px solid rgba(226,75,74,0.2); }
+
+  .bar-wrap {
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+  .bar-fresh { background: var(--blue); }
+  .bar-ok { background: var(--green); }
+  .bar-warning { background: var(--amber); }
+  .bar-dying { background: var(--red); }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .health-text { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--muted); }
+  .revive-btn {
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    padding: 4px 12px;
+    border: 0.5px solid var(--border2);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .revive-btn:hover { background: var(--surface2); }
+
+  /* Empty */
+  .empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .empty i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.3; }
+
+  /* Modal */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+  }
+  .modal {
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 380px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+  .modal input:focus, .modal select:focus { border-color: var(--accent); }
+  .modal select option { background: var(--surface2); }
+
+  .modal-btns { display: flex; gap: 8px; margin-top: 4px; }
+  .modal-btns button {
+    flex: 1;
+    padding: 9px;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 0.5px solid var(--border2);
+  }
+  .btn-primary { background: var(--accent); color: #fff; border-color: transparent !important; }
+  .btn-cancel { background: transparent; color: var(--text); }
+  .btn-cancel:hover { background: var(--surface2); }
+
+  /* Quiz */
+  .quiz-box {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 1rem; line-height: 1.5; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 7px; }
+  .quiz-opt {
+    padding: 9px 14px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .quiz-opt:hover:not(:disabled) { background: var(--surface2); border-color: var(--accent); }
+  .quiz-opt.correct { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+  .quiz-result { font-size: 13px; margin-top: 10px; font-weight: 600; font-family: 'Space Mono', monospace; }
+
+  /* Pulse animation for dying */
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(226,75,74,0.35); }
+    50% { border-color: rgba(226,75,74,0.7); }
+  }
+  .topic-card.dying { animation: pulse-border 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-brain"></i></div>
+      <div class="logo-text">
+        <h1>Decay Tracker</h1>
+        <p>// your knowledge is expiring</p>
+      </div>
+    </div>
+    <button class="add-btn" onclick="openAdd()"><i class="ti ti-plus"></i> Add topic</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Tracked</div>
+      <div class="stat-val" id="s-total">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Dying</div>
+      <div class="stat-val red" id="s-dying">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Avg health</div>
+      <div class="stat-val green" id="s-avg">—</div>
+    </div>
+  </div>
+
+  <div class="section-label">Knowledge vault</div>
+  <div class="topics" id="topics-list"></div>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+const DECAY_PER_HOUR = 3;
+
+let topics = JSON.parse(localStorage.getItem('dt-v2') || 'null') || [
+  { id:1, name:'React Hooks', category:'Programming', learnedAt: Date.now()-1.5*86400000, baseHealth:100 },
+  { id:2, name:'Binary Search', category:'Algorithms', learnedAt: Date.now()-2.8*86400000, baseHealth:100 },
+  { id:3, name:'OSI Model', category:'Networking', learnedAt: Date.now()-0.5*86400000, baseHealth:100 },
+  { id:4, name:'CSS Grid', category:'Design', learnedAt: Date.now()-3.6*86400000, baseHealth:100 },
+];
+let nextId = 10;
+
+const quizBank = {
+  Programming: [
+    {q:'Which hook runs side effects in React?', opts:['useEffect','useState','useRef','useMemo'], ans:0},
+    {q:'useState returns...?', opts:['Just a value','Just a setter','A [value, setter] pair','An object'], ans:2},
+    {q:'What does "lifting state up" mean in React?', opts:['Moving state to a parent component','Using Redux','Adding more useState calls','Deleting child components'], ans:0},
+  ],
+  Algorithms: [
+    {q:'Binary search requires the array to be...?', opts:['Sorted','Unique','Short','Reversed'], ans:0},
+    {q:'Binary search time complexity?', opts:['O(n)','O(n²)','O(log n)','O(1)'], ans:2},
+    {q:'What is the worst case for quicksort?', opts:['O(n log n)','O(n)','O(n²)','O(log n)'], ans:2},
+  ],
+  Networking: [
+    {q:'Which OSI layer handles routing?', opts:['Data Link','Transport','Network','Session'], ans:2},
+    {q:'How many layers does the OSI model have?', opts:['5','6','7','8'], ans:2},
+    {q:'TCP provides what guarantee over UDP?', opts:['Speed','Encryption','Reliability','Compression'], ans:2},
+  ],
+  Design: [
+    {q:'Which CSS property defines grid columns?', opts:['grid-rows','grid-template-columns','flex-columns','column-count'], ans:1},
+    {q:'CSS "flex: 1" is shorthand for...?', opts:['flex-grow: 1','flex-shrink: 1','flex-basis: 1px','All three combined'], ans:3},
+  ],
+  Math: [
+    {q:'What is O(1) called?', opts:['Linear','Quadratic','Constant','Logarithmic'], ans:2},
+    {q:'What is 2^10?', opts:['512','1024','2048','256'], ans:1},
+  ],
+  Science: [
+    {q:'DNA stands for?', opts:['Deoxyribonucleic acid','Diribonucleic acid','Dinucleic acid','Deoxyribose acid'], ans:0},
+  ],
+  Other: [
+    {q:'Spaced repetition helps because...?', opts:['It is fun','It fights the forgetting curve','It is faster','It uses AI'], ans:1},
+  ],
+};
+
+function save() { localStorage.setItem('dt-v2', JSON.stringify(topics)); }
+
+function getHealth(t) {
+  const hoursOld = (Date.now() - t.learnedAt) / 3600000;
+  return Math.max(0, Math.min(100, (t.baseHealth || 100) - Math.round(hoursOld * DECAY_PER_HOUR)));
+}
+
+function getStatus(h) {
+  if (h <= 20) return { label:'Dying!', tag:'tag-dying', bar:'bar-dying', cls:'dying' };
+  if (h <= 45) return { label:'Warning', tag:'tag-warning', bar:'bar-warning', cls:'warning' };
+  if (h <= 75) return { label:'OK', tag:'tag-ok', bar:'bar-ok', cls:'' };
+  return { label:'Fresh', tag:'tag-fresh', bar:'bar-fresh', cls:'' };
+}
+
+function timeAgo(ts) {
+  const d = (Date.now()-ts)/86400000;
+  if (d < 0.05) return 'just now';
+  if (d < 1) return Math.round(d*24) + 'h ago';
+  if (d < 2) return '1 day ago';
+  return Math.floor(d) + ' days ago';
+}
+
+function render() {
+  const list = document.getElementById('topics-list');
+  document.getElementById('s-total').textContent = topics.length;
+
+  if (!topics.length) {
+    list.innerHTML = '<div class="empty"><i class="ti ti-books"></i>Nothing tracked yet.<br>Add something you just learned!</div>';
+    document.getElementById('s-dying').textContent = 0;
+    document.getElementById('s-avg').textContent = '—';
+    return;
+  }
+
+  const withHealth = topics.map(t => ({ ...t, h: getHealth(t) }));
+  withHealth.sort((a,b) => a.h - b.h);
+
+  const dying = withHealth.filter(t => t.h <= 20).length;
+  const avg = Math.round(withHealth.reduce((a,t) => a+t.h, 0) / withHealth.length);
+  document.getElementById('s-dying').textContent = dying;
+  document.getElementById('s-avg').textContent = avg + '%';
+
+  list.innerHTML = withHealth.map(t => {
+    const s = getStatus(t.h);
+    return `<div class="topic-card ${s.cls}" onclick="openQuiz(${t.id})">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${t.name}</div>
+          <div class="card-meta">${t.category} · learned ${timeAgo(t.learnedAt)}</div>
+        </div>
+        <span class="tag ${s.tag}">${s.label}</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill ${s.bar}" style="width:${t.h}%"></div></div>
+      <div class="card-footer">
+        <span class="health-text">${t.h}% health remaining</span>
+        <button class="revive-btn" onclick="event.stopPropagation();openQuiz(${t.id})">
+          <i class="ti ti-bolt"></i> revive
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAdd() {
+  document.getElementById('modal-root').innerHTML = `
+    <div class="overlay" onclick="maybeClose(event)">
+      <div class="modal">
+        <div class="modal-title"><i class="ti ti-plus-circle" style="color:var(--accent)"></i> Add what you learned</div>
+        <input id="t-name" placeholder="Topic name (e.g. Binary Search)" maxlength="50" onkeydown="if(event.key==='Enter')addTopic()" />
+        <select id="t-cat">
+          <option>Programming</option><option>Algorithms</option><option>Networking</option>
+          <option>Design</option><option>Math</option><option>Science</option><option>Other</option>
+        </select>
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button class="btn-primary" onclick="addTopic()">Track it</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('t-name').focus(), 50);
+}
+
+function addTopic() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) return;
+  const cat = document.getElementById('t-cat').value;
+  topics.push({ id: nextId++, name, category: cat, learnedAt: Date.now(), baseHealth: 100 });
+  save(); closeModal(); render();
+}
+
+function openQuiz(id) {
+  const t = topics.find(x => x.id === id);
+  if (!t) return;
+  const bank = quizBank[t.category] || quizBank['Other'];
+  const q = bank[Math.floor(Math.random() * bank.length)];
+  const h = getHealth(t);
+  const s = getStatus(h);
+  document.getElementById('modal-root').innerHTML = `
+    <div class="overlay" onclick="maybeClose(event)">
+      <div class="modal">
+        <div class="modal-title"><i class="ti ti-bolt" style="color:var(--amber)"></i> Revive: ${t.name}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+          <div style="flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+            <div style="width:${h}%;height:100%;background:${h<=20?'var(--red)':h<=45?'var(--amber)':'var(--green)'};border-radius:10px;"></div>
+          </div>
+          <span style="font-size:12px;font-family:'Space Mono',monospace;color:var(--muted)">${h}%</span>
+        </div>
+        <div class="quiz-box">
+          <div class="quiz-q">${q.q}</div>
+          <div class="quiz-opts" id="qopts">
+            ${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="checkAns(${id},${i},${q.ans},this)">${o}</button>`).join('')}
+          </div>
+          <div class="quiz-result" id="qresult"></div>
+        </div>
+        <button class="btn-cancel" style="width:100%;padding:9px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-family:'Syne',sans-serif;font-weight:600;border:0.5px solid var(--border2);background:transparent;color:var(--text)" onclick="closeModal()">Close</button>
+      </div>
+    </div>`;
+}
+
+function checkAns(id, chosen, correct, btn) {
+  document.querySelectorAll('.quiz-opt').forEach(o => o.disabled = true);
+  const res = document.getElementById('qresult');
+  const t = topics.find(x => x.id === id);
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    res.style.color = 'var(--green)';
+    res.textContent = '✓ Correct! +25 health restored.';
+    t.learnedAt = Date.now() - Math.max(0, (Date.now() - t.learnedAt) - 25/DECAY_PER_HOUR*3600000);
+    t.baseHealth = Math.min(100, (t.baseHealth||100) + 5);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-opt')[correct].classList.add('correct');
+    res.style.color = 'var(--red)';
+    res.textContent = '✗ Wrong. Keep reviewing this topic!';
+  }
+  save();
+  setTimeout(() => { closeModal(); render(); }, 1700);
+}
+
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+function maybeClose(e) { if (e.target.classList.contains('overlay')) closeModal(); }
+
+render();
+setInterval(render, 60000);
+</script>
+</body>
+</html>

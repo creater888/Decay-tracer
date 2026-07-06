@@ -1,0 +1,35 @@
+{
+  "name": "decay-tracker",
+  "version": "1.0.0",
+  "description": "Your Knowledge is Expiring",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win portable",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux AppImage"
+  },
+  "build": {
+    "appId": "com.decaytracker.app",
+    "productName": "Decay Tracker",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "src/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "src/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "src/icon.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.3.3",
+    "electron-builder": "^24.0.0"
+  }
+}
