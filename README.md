@@ -34,3 +34,4 @@ This creates a `dist/` folder with a portable `.exe` — no install needed, just
 - Quizzes you when a topic is about to die
 - Lives in your system tray
 - All data saved locally on your PC
+This is a test.
